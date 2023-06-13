@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+const jwt = require('jsonwebtoken');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -32,6 +33,15 @@ async function run() {
       .db("eduLightDb")
       .collection("selectedClass");
     const usersCollection = client.db("eduLightDb").collection("users");
+
+
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "5h",
+      });
+      res.send(token);
+    });
 
     //users related apis
 
