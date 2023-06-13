@@ -31,6 +31,20 @@ async function run() {
     const selectedClassCollection = client
       .db("eduLightDb")
       .collection("selectedClass");
+    const usersCollection = client.db("eduLightDb").collection("users");
+
+    //users related apis
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+      if (existingUser) {
+        return res.send({ massage: "User Already Existing" });
+      }
+
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
 
     //instrucClasses apis
     app.get("/instrucClasses", async (req, res) => {
