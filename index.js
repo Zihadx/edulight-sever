@@ -38,6 +38,25 @@ async function run() {
       res.send(result);
     });
 
+    //selected class collection
+
+    app.get("/selectedClass", async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+        return;
+      }
+      const query = { email: email };
+      const result = await selectedClassCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/selectedClass", async (req, res) => {
+      const classes = req.body;
+      const result = await selectedClassCollection.insertOne(classes);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
