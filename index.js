@@ -95,7 +95,6 @@ async function run() {
     });
 
     app.get("/users/admin/:email", verifyJwt, async (req, res) => {
-      //TODO: verifyJwt
       const email = req.params.email;
 
       if (req.decoded.email !== email) {
@@ -108,6 +107,21 @@ async function run() {
       res.send(result);
     });
 
+    // useInstructor
+    app.get("/users/instructor/:email", verifyJwt, async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.send({ instructor: false });
+      }
+
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = { instructor: user?.role === "instructor" };
+      res.send(result);
+    });
+
+    // admin dashboard related apis----------------------
     app.patch("/users/admin/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -132,9 +146,62 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/manageClass", verifyJwt, verifyAdmin, async (req, res) => {
+      const result = await instrucClassesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/manageClass/approve/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "approve",
+        },
+      };
+      const result = await instrucClassesCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+
+    app.patch("/manageClass/deny/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: "deny",
+        },
+      };
+      const result = await instrucClassesCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+
     //instrucClasses apis
     app.get("/instrucClasses", async (req, res) => {
       const result = await instrucClassesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/instrucClasses", async (req, res) => {
+      const newClass = req.body;
+      console.log(newClass);
+      const result = await instrucClassesCollection.insertOne(newClass);
+      res.send(result);
+    });
+
+    // popular classes api
+    app.get("/popularClasses", async (req, res) => {
+      const query = {};
+      const options = {
+        sort: { students: -1 },
+      };
+      const cursor = instrucClassesCollection.find(query, options);
+      const result = await cursor.toArray();
       res.send(result);
     });
 
@@ -194,6 +261,62 @@ async function run() {
       const deleteResult = await selectedClassCollection.deleteMany(query);
 
       res.send({ insertResult, deleteResult });
+    });
+
+    app.get("/paymentHistory", verifyJwt, async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+        return;
+      }
+
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(403).send({ err: true, massage: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const result = await paymentCollection
+        .find(query)
+        .sort({ date: -1 })
+        .toArray();
+      res.send(result);
+    });
+
+    //problem here
+
+    app.get("/enrolledClass/:email", verifyJwt, async (req, res) => {
+      const email = req.params.email;
+      if (!email) {
+        res.send([]);
+        return;
+      }
+
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(403).send({ err: true, massage: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.get("/myClass", verifyJwt, async (req, res) => {
+      const email = req.query.email;
+      if (!email) {
+        res.send([]);
+        return;
+      }
+
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(403).send({ err: true, massage: "forbidden access" });
+      }
+
+      const query = { email: email };
+      const result = await instrucClassesCollection.find(query).toArray();
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
