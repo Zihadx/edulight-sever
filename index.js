@@ -44,7 +44,6 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
 
     const instrucClassesCollection = client
       .db("eduLightDb")
@@ -181,7 +180,7 @@ async function run() {
       res.send(result);
     });
 
-    //instrucClasses apis
+    //instrucClasses apis----------------------
     app.get("/instrucClasses", async (req, res) => {
       const result = await instrucClassesCollection.find().toArray();
       res.send(result);
@@ -194,7 +193,7 @@ async function run() {
       res.send(result);
     });
 
-    // popular classes api
+    // popular classes api----------------------
     app.get("/popularClasses", async (req, res) => {
       const query = {};
       const options = {
@@ -205,7 +204,7 @@ async function run() {
       res.send(result);
     });
 
-    //selected class collection
+    //selected class collection-------------------------
 
     app.get("/selectedClass", verifyJwt, async (req, res) => {
       const email = req.query.email;
@@ -237,7 +236,7 @@ async function run() {
       res.send(result);
     });
 
-    //payment apis
+    //payment apis-------------------------------
     app.post("/create-payment-intent", verifyJwt, async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
@@ -283,7 +282,7 @@ async function run() {
       res.send(result);
     });
 
-    //problem here
+    //problem here--------------------------------
 
     app.get("/enrolledClass/:email", verifyJwt, async (req, res) => {
       const email = req.params.email;
@@ -302,6 +301,7 @@ async function run() {
       res.send(result);
     });
 
+    // instructor apis------------------------
     app.get("/myClass", verifyJwt, async (req, res) => {
       const email = req.query.email;
       if (!email) {
