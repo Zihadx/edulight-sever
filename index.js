@@ -180,9 +180,25 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/manageClass/feedback/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          feedback: req.body.feedback,
+        },
+      };
+      const result = await instrucClassesCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
+    });
+
     //instrucClasses apis----------------------
     app.get("/instrucClasses", async (req, res) => {
-      const result = await instrucClassesCollection.find().toArray();
+      const query = { status: "approve" };
+      const result = await instrucClassesCollection.find(query).toArray();
       res.send(result);
     });
 
